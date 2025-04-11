@@ -137,6 +137,10 @@ public class VsActivityImpl implements VsActivity {
     @Override
     public void transcribe(VsJobDetails jobDetails, VsActionReturnVals results) {
         try {
+            if(results.getS3Key() == null) {
+                return;
+            }
+
             // Configure AWS credentials
             AWSCredentials credentials = new BasicAWSCredentials(
                     jobDetails.apiKey(),
@@ -246,6 +250,10 @@ public class VsActivityImpl implements VsActivity {
     @Override
     public void convertOriginalTextToTargetLanguage(VsJobDetails jobDetails, VsActionReturnVals results) {
         try {
+            if(results.getOriginalText() == null) {
+                return;
+            }
+
             // Configure AWS credentials
             AWSCredentials credentials = new BasicAWSCredentials(
                     jobDetails.apiKey(),

@@ -55,22 +55,18 @@ public class VsWorkflowImpl implements VsWorkflow {
             System.out.println("Failed to transcribe the video: " + jobDetails);
         }
 
-        if(results.getOriginalText() != null) {
-            try {
-                activityStub.convertOriginalTextToTargetLanguage(jobDetails, results);
-            }
-            catch (Exception e) {
-                System.out.println("Failed to translate the original text to target language: " + jobDetails);
-            }
+        try {
+            activityStub.convertOriginalTextToTargetLanguage(jobDetails, results);
+        }
+        catch (Exception e) {
+            System.out.println("Failed to translate the original text to target language: " + jobDetails);
         }
 
-        if(results.getTargetText() != null) {
-            try {
-                 return activityStub.generateSummary(jobDetails, results);
-            }
-            catch (Exception e) {
-                System.out.println("Failed to generate summary: " + jobDetails);
-            }
+        try {
+            return activityStub.generateSummary(jobDetails, results);
+        }
+        catch (Exception e) {
+            System.out.println("Failed to generate summary: " + jobDetails);
         }
 
         // Take compensating action
