@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VsWorkflowImpl Workflow Diagram</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 30px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 2px solid #e9ecef;
+            padding-bottom: 20px;
+        }
+        h1 {
+            color: #193566;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        h2 {
+            color: #193566;
+            margin-top: 40px;
+            margin-bottom: 20px;
+            border-left: 5px solid #4e73df;
+            padding-left: 15px;
+        }
+        h3 {
+            color: #2e5cb8;
+            margin-top: 25px;
+            margin-bottom: 15px;
+        }
+        .diagram-container {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 30px;
+            margin: 30px 0;
+        }
+        .mermaid {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .info-section {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 30px;
+            margin: 30px 0;
+        }
+        .config-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .config-box {
+            flex: 1;
+            min-width: 300px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            border-left: 5px solid #4e73df;
+            padding: 20px;
+        }
+        .config-box.retry {
+            border-left-color: #e74a3b;
+        }
+        .config-box.video {
+            border-left-color: #f6c23e;
+        }
+        .config-box h3 {
+            margin-top: 0;
+            font-size: 1.2em;
+        }
+        .config-box ul {
+            padding-left: 20px;
+        }
+        .workflow-steps {
+            counter-reset: step;
+        }
+        .workflow-step {
+            position: relative;
+            padding-left: 50px;
+            margin-bottom: 25px;
+            counter-increment: step;
+        }
+        .workflow-step:before {
+            content: counter(step);
+            position: absolute;
+            left: 0;
+            top: 0;
+            background: #4e73df;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 30px;
+            font-weight: bold;
+        }
+        .workflow-step h4 {
+            margin: 0 0 10px 0;
+            color: #2e5cb8;
+        }
+        .error-handling {
+            background-color: #fdf5f5;
+            border-left: 5px solid #e74a3b;
+            padding: 15px;
+            margin-top: 10px;
+            border-radius: 4px;
+        }
+        .error-handling h5 {
+            margin: 0 0 10px 0;
+            color: #e74a3b;
+        }
+        @media (max-width: 768px) {
+            .config-container {
+                flex-direction: column;
+            }
+            .config-box {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>VsWorkflowImpl Workflow Diagram</h1>
+            <p>A visual representation of the Temporal video summary workflow implementation</p>
+        </div>
+        
+        <div class="diagram-container">
+            <h2>Workflow Process</h2>
+            <div class="mermaid">
+graph TD
+    A([Start]) --> B[Upload to S3]
+    B -->|Success| C[Transcribe Video]
+    B -->|Failure| D["Return null (End Workflow)"]
+    
+    C -->|Success| E[Convert Text to Target Language]
+    C -->|Failure| F["Delete from S3 (Compensating Action)"]
+    
+    E -->|Success| G[Generate Summary]
+    E -->|Failure| F
+    
+    G -->|Success| H["Return Summary (End Workflow)"]
+    G -->|Failure| F
+    
+    F --> I["Return null (End Workflow)"]
+    
+    classDef default fill:#f9f9f9,stroke:#333,stroke-width:1px;
+    classDef success fill:#d4edda,stroke:#28a745,stroke-width:2px;
+    classDef error fill:#f8d7da,stroke:#dc3545,stroke-width:2px;
+    classDef action fill:#e6f3ff,stroke:#0275d8,stroke-width:2px;
+    classDef start fill:#193566,color:#fff,stroke:#193566,stroke-width:2px;
+    
+    class A start;
+    class B,C,E,G action;
+    class D,F,I error;
+    class H success;
+            </div>
+            
+            <script>
+                mermaid.initialize({
+                    startOnLoad: true,
+                    theme: 'default',
+                    flowchart: {
+                        useMaxWidth: true,
+                        htmlLabels: true,
+                        curve: 'cardinal',
+                        rankSpacing: 100,
+                        nodeSpacing: 50
+                    }
+                });
+            </script>
+        </div>
+        
+        <div class="info-section">
+            <h2>Workflow Configuration</h2>
+            <div class="config-container">
+                <div class="config-box retry">
+                    <h3>Retry Options</h3>
+                    <ul>
+                        <li><strong>Initial Interval:</strong> 1 second</li>
+                        <li><strong>Maximum Interval:</strong> 30 seconds</li>
+                        <li><strong>Backoff Coefficient:</strong> 2 (exponential backoff)</li>
+                        <li><strong>Maximum Attempts:</strong> 10</li>
+                    </ul>
+                </div>
+                
+                <div class="config-box">
+                    <h3>Default Activity Options</h3>
+                    <ul>
+                        <li><strong>Start to Close Timeout:</strong> 15 minutes</li>
+                        <li><strong>Schedule to Close Timeout:</strong> 30 minutes</li>
+                        <li><strong>Heartbeat Timeout:</strong> 15 minutes</li>
+                    </ul>
+                </div>
+                
+                <div class="config-box video">
+                    <h3>Video Processing Options</h3>
+                    <ul>
+                        <li><strong>Start to Close Timeout:</strong> 30 minutes</li>
+                        <li><strong>Schedule to Close Timeout:</strong> 45 minutes</li>
+                        <li><strong>Heartbeat Timeout:</strong> 30 minutes</li>
+                        <li><strong>Applied to:</strong> uploadToS3, transcribe</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <h2>Implementation Details</h2>
+            <div>
+                <p><strong>Implementation Class:</strong> <code>VsWorkflowImpl</code></p>
+                <p><strong>Interface:</strong> <code>VsWorkflow</code></p>
+                <p><strong>Main Method:</strong> <code>getVideoSummary(VsJobDetails jobDetails)</code></p>
+            </div>
+            
+            <h2>Workflow Steps</h2>
+            <div class="workflow-steps">
+                <div class="workflow-step">
+                    <h4>Upload to S3</h4>
+                    <p>Uploads the video file to Amazon S3 storage for processing.</p>
+                    <div class="error-handling">
+                        <h5>Error Handling:</h5>
+                        <p>If upload fails, the workflow ends and returns null without compensating action.</p>
+                    </div>
+                </div>
+                
+                <div class="workflow-step">
+                    <h4>Transcribe Video</h4>
+                    <p>Transcribes the uploaded video to text using the configured transcription service.</p>
+                    <div class="error-handling">
+                        <h5>Error Handling:</h5>
+                        <p>If transcription fails, the workflow attempts to delete the uploaded file from S3 as a compensating action.</p>
+                    </div>
+                </div>
+                
+                <div class="workflow-step">
+                    <h4>Convert Text to Target Language</h4>
+                    <p>Translates the transcribed text to the target language specified in the job details.</p>
+                    <div class="error-handling">
+                        <h5>Error Handling:</h5>
+                        <p>If translation fails, the workflow attempts to delete the uploaded file from S3 as a compensating action.</p>
+                    </div>
+                </div>
+                
+                <div class="workflow-step">
+                    <h4>Generate Summary</h4>
+                    <p>Creates a concise summary of the translated text.</p>
+                    <div class="error-handling">
+                        <h5>Error Handling:</h5>
+                        <p>If summary generation fails, the workflow attempts to delete the uploaded file from S3 as a compensating action.</p>
+                    </div>
+                </div>
+                
+                <div class="workflow-step">
+                    <h4>Compensating Action (if needed)</h4>
+                    <p>Deletes the video file from S3 storage if any step after upload fails.</p>
+                    <div class="error-handling">
+                        <h5>Error Handling:</h5>
+                        <p>If deletion from S3 fails, an exception is thrown.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

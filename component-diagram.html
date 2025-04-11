@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Summary Application - Component Diagram</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@9.4.3/dist/mermaid.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 30px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 2px solid #e9ecef;
+            padding-bottom: 20px;
+        }
+        h1 {
+            color: #193566;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        h2 {
+            color: #193566;
+            margin-top: 40px;
+            margin-bottom: 20px;
+            border-left: 5px solid #4e73df;
+            padding-left: 15px;
+        }
+        h3 {
+            color: #2e5cb8;
+            margin-top: 25px;
+            margin-bottom: 15px;
+        }
+        .diagram-container {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 30px;
+            margin: 30px 0;
+            overflow: auto;
+        }
+        .mermaid {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .info-section {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 30px;
+            margin: 30px 0;
+        }
+        .component-details {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .component-box {
+            flex: 1;
+            min-width: 300px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            border-left: 5px solid #4e73df;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .component-box h3 {
+            margin-top: 0;
+            font-size: 1.2em;
+            border-bottom: 1px solid #dee2e6;
+            padding-bottom: 10px;
+        }
+        code {
+            background-color: #f1f1f1;
+            padding: 2px 4px;
+            border-radius: 4px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9em;
+        }
+        .aws-box {
+            border-left-color: #FF9900;
+        }
+        .temporal-box {
+            border-left-color: #7B60E0;
+        }
+        .model-box {
+            border-left-color: #28a745;
+        }
+        @media (max-width: 768px) {
+            .component-details {
+                flex-direction: column;
+            }
+            .component-box {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Video Summary Application - Component Diagram</h1>
+            <p>Architecture overview of the Temporal video summary application</p>
+        </div>
+        
+        <div class="diagram-container">
+            <h2>Component Architecture</h2>
+            <div class="mermaid">
+flowchart TD
+    %% Define nodes with clear IDs
+    clientApp[VsApp<br>Client Executable]
+    temporalServer[Temporal Server]
+    taskQueue[VIDEO_SUMMARY_TASK_QUEUE]
+    worker[VsWorkflowWorker<br>Worker Executable]
+    
+    %% Interfaces and implementations
+    workflowIf[VsWorkflow<br>Interface]
+    workflowImpl[VsWorkflowImpl]
+    activityIf[VsActivity<br>Interface]
+    activityImpl[VsActivityImpl]
+    
+    %% Model
+    jobDetails[VsJobDetails<br>Configuration]
+    
+    %% AWS Services
+    s3[Amazon S3]
+    transcribe[Amazon Transcribe]
+    translate[Amazon Translate]
+    comprehend[Amazon Comprehend]
+    
+    %% Clear client-server relationships
+    clientApp -->|1. Connect| temporalServer
+    clientApp -->|2. Start workflow<br>GetStatus<br>Cancel| temporalServer
+    temporalServer -->|3. Dispatch tasks| taskQueue
+    worker -.->|4. Subscribe to| taskQueue
+    worker -->|5. Send/Receive events| temporalServer
+    
+    %% Worker registration (cleaner paths)
+    worker -->|registers| workflowImpl
+    worker -->|registers| activityImpl
+    
+    %% Interface Implementation (well-aligned arrows)
+    workflowImpl -->|implements| workflowIf
+    activityImpl -->|implements| activityIf
+    
+    %% Core relationships (straightened for clarity)
+    workflowImpl -->|calls| activityIf
+    
+    %% Data relationships (better positioned)
+    clientApp -->|creates| jobDetails
+    workflowImpl -.->|uses| jobDetails
+    activityImpl -.->|uses| jobDetails
+    
+    %% AWS service interactions (spread out for readability)
+    activityImpl -->|uploadToS3<br>deleteFromS3| s3
+    activityImpl -->|transcribe| transcribe
+    activityImpl -->|convertToTargetLang| translate
+    activityImpl -->|generateSummary| comprehend
+    
+    %% Workflow sequence
+    subgraph workflowSteps[Workflow Execution Sequence]
+        direction LR
+        step1[Upload to S3] --> step2[Transcribe Video]
+        step2 --> step3[Translate Text]
+        step3 --> step4[Generate Summary]
+    end
+    
+    %% Connect workflow to the sequence
+    workflowImpl -.->|orchestrates via<br>activity calls| workflowSteps
+    
+    %% Styling for better visuals
+    classDef client fill:#e6f3ff,stroke:#4e73df,stroke-width:2px
+    classDef server fill:#f3e6ff,stroke:#7B60E0,stroke-width:2px
+    classDef queue fill:#ffe6e6,stroke:#e83e8c,stroke-width:2px,stroke-dasharray:5,5
+    classDef interface fill:#f9f9f9,stroke:#333,stroke-width:1px,stroke-dasharray:5,5
+    classDef implementation fill:#f9f9f9,stroke:#333,stroke-width:2px
+    classDef aws fill:#fff9e6,stroke:#FF9900,stroke-width:2px
+    classDef model fill:#e6ffe6,stroke:#28a745,stroke-width:2px
+    classDef steps fill:#f8f9fa,stroke:#333,stroke-width:1px
+    
+    %% Apply styles
+    class clientApp,worker client
+    class temporalServer server
+    class taskQueue queue
+    class workflowIf,activityIf interface
+    class workflowImpl,activityImpl implementation
+    class s3,transcribe,translate,comprehend aws
+    class jobDetails model
+    class workflowSteps,step1,step2,step3,step4 steps
+            </div>
+            
+            <script>
+                mermaid.initialize({
+                    startOnLoad: true,
+                    theme: 'neutral',
+                    flowchart: {
+                        useMaxWidth: true,
+                        htmlLabels: true,
+                        curve: 'basis',
+                        nodeSpacing: 100,
+                        rankSpacing: 100,
+                        padding: 15
+                    },
+                    securityLevel: 'loose'
+                });
+            </script>
+        </div>
+        
+        <div class="info-section">
+            <h2>Component Overview</h2>
+            
+            <div class="component-details">
+                <div class="component-box">
+                    <h3>Executables</h3>
+                    <ul>
+                        <li><strong>VsApp</strong>: Client executable that connects to the Temporal server and can send commands such as Start workflow, Cancel, GetStatus, etc.</li>
+                        <li><strong>VsWorkflowWorker</strong>: Worker executable that connects to the Temporal server and subscribes to <code>VIDEO_SUMMARY_TASK_QUEUE</code>, sending and receiving events to orchestrate workflow execution</li>
+                    </ul>
+                </div>
+                
+                <div class="component-box temporal-box">
+                    <h3>Temporal Components</h3>
+                    <ul>
+                        <li><strong>Temporal Server</strong>: Orchestration engine that manages workflow execution, task queues, and state</li>
+                        <li><strong>Task Queue</strong>: <code>VIDEO_SUMMARY_TASK_QUEUE</code> - Communication channel between the Temporal server and workers</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="component-details">
+                <div class="component-box">
+                    <h3>Workflow Components</h3>
+                    <ul>
+                        <li><strong>VsWorkflow</strong>: Interface defining the workflow contract with <code>getVideoSummary</code> method</li>
+                        <li><strong>VsWorkflowImpl</strong>: Implementation that orchestrates the video processing activities with error handling and compensating actions</li>
+                    </ul>
+                </div>
+                
+                <div class="component-box">
+                    <h3>Activity Components</h3>
+                    <ul>
+                        <li><strong>VsActivity</strong>: Interface defining the available activities</li>
+                        <li><strong>VsActivityImpl</strong>: Implementation that performs the actual video processing work</li>
+                        <li>Activities:
+                            <ul>
+                                <li><code>uploadToS3</code>: Uploads video file to S3 storage</li>
+                                <li><code>transcribe</code>: Transcribes video to text</li>
+                                <li><code>convertOriginalTextToTargetLanguage</code>: Translates text</li>
+                                <li><code>generateSummary</code>: Creates a summary from the translated text</li>
+                                <li><code>deleteFromS3</code>: Compensating action to remove files if needed</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="component-details">
+                <div class="component-box model-box">
+                    <h3>Data Models</h3>
+                    <ul>
+                        <li><strong>VsJobDetails</strong>: Configuration record that contains:
+                            <ul>
+                                <li>Video URL</li>
+                                <li>Original language</li>
+                                <li>Target language</li>
+                                <li>AWS credentials and configuration</li>
+                            </ul>
+                        </li>
+                        <li><strong>VsSharedKeys</strong>: Contains shared constants including task queue names</li>
+                    </ul>
+                </div>
+                
+                <div class="component-box aws-box">
+                    <h3>External Services</h3>
+                    <ul>
+                        <li><strong>Amazon S3</strong>: Storage for video files and transcription results</li>
+                        <li><strong>Amazon Transcribe</strong>: Speech-to-text service for video transcription</li>
+                        <li><strong>Amazon Translate</strong>: Translation service for converting text between languages</li>
+                        <li><strong>Amazon Comprehend</strong>: Text analysis service used for generating summaries</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <h2>Key Interactions</h2>
+            <ol>
+                <li><strong>Client-Server Communication:</strong>
+                    <ul>
+                        <li>Client executable (<code>VsApp</code>) connects to the Temporal server</li>
+                        <li>Client sends commands like Start workflow, GetStatus, or Cancel to the Temporal server</li>
+                        <li>Client creates the <code>VsJobDetails</code> with configuration parameters for the workflow</li>
+                    </ul>
+                </li>
+                <li><strong>Worker-Server Communication:</strong>
+                    <ul>
+                        <li>Worker executable (<code>VsWorkflowWorker</code>) connects to the Temporal server</li>
+                        <li>Worker subscribes to <code>VIDEO_SUMMARY_TASK_QUEUE</code></li>
+                        <li>Worker sends and receives events to/from the Temporal server</li>
+                        <li>These events orchestrate the execution of activities in the workflow</li>
+                    </ul>
+                </li>
+                <li><strong>Workflow Execution:</strong>
+                    <ul>
+                        <li>Workflow implementation (<code>VsWorkflowImpl</code>) controls the execution flow</li>
+                        <li>Activity implementation (<code>VsActivityImpl</code>) performs the actual work:</li>
+                        <ul>
+                            <li>Uploading the video to S3</li>
+                            <li>Transcribing the video using Amazon Transcribe</li>
+                            <li>Translating the text using Amazon Translate</li>
+                            <li>Generating a summary using Amazon Comprehend</li>
+                            <li>Performing compensating actions (deleting from S3) if needed</li>
+                        </ul>
+                    </ul>
+                </li>
+            </ol>
+            
+            <h2>Fault-Tolerance Features</h2>
+            <ul>
+                <li><strong>Retry Options</strong>: Configures automatic retry of failed activities with exponential backoff</li>
+                <li><strong>Activity Timeouts</strong>: Different timeouts for standard vs. video processing activities</li>
+                <li><strong>Compensating Actions</strong>: If steps fail after S3 upload, the application tries to clean up by deleting the files</li>
+                <li><strong>State Persistence</strong>: Temporal maintains workflow state, allowing recovery from worker failures</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>
