@@ -8,7 +8,7 @@ import io.temporal.serviceclient.WorkflowServiceStubs;
 
 import java.util.concurrent.CompletableFuture;
 
-public class App {
+public class VsApp {
     public static void main(String[] args) throws Exception {
         // A WorkflowServiceStubs communicates with the Temporal front-end service.
         WorkflowServiceStubs serviceStub = WorkflowServiceStubs.newLocalServiceStubs();
@@ -20,13 +20,13 @@ public class App {
         // Workflow options configure  Workflow stubs.
         // A WorkflowId prevents duplicate instances, which are removed.
         WorkflowOptions options = WorkflowOptions.newBuilder()
-                .setTaskQueue(SharedKeys.VIDEO_SUMMARY_TASK_QUEUE)
+                .setTaskQueue(VsSharedKeys.VIDEO_SUMMARY_TASK_QUEUE)
                 .setWorkflowId("video-summary-workflow")
                 .build();
 
         // WorkflowStubs enable calls to methods as if the Workflow object is local
         // but actually perform a gRPC call to the Temporal Service.
-        Workflow workflow = client.newWorkflowStub(Workflow.class, options);
+        VsWorkflow workflow = client.newWorkflowStub(VsWorkflow.class, options);
 
         String videoUrl = "File URL";
         String orgLanguage = "En";
@@ -36,7 +36,7 @@ public class App {
         String region = "us-east-1";
         String bucketName = "Bucket name";
 
-        JobDetails jobDetails = new JobDetails(videoUrl, orgLanguage, targetLanguage, apiKey, apiSecret, region, bucketName);
+        VsJobDetails jobDetails = new VsJobDetails(videoUrl, orgLanguage, targetLanguage, apiKey, apiSecret, region, bucketName);
 
         // Sync call
         // String result = workflow.getVideoSummary(jobDetails);
@@ -48,7 +48,7 @@ public class App {
                 we.getWorkflowId(), we.getRunId()));
 
         // Recreate stub from execution ID
-        workflow = client.newWorkflowStub(Workflow.class, we.getWorkflowId());
+        workflow = client.newWorkflowStub(VsWorkflow.class, we.getWorkflowId());
 
         // Convert to untyped stub and get future result
         WorkflowStub untypedStub = WorkflowStub.fromTyped(workflow);

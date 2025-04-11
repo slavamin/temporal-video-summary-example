@@ -2,8 +2,8 @@ package io.temporal.exercises.videosummary;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
-@JsonDeserialize(as = JobDetails.class)
-public record JobDetails(
+@JsonDeserialize(as = VsJobDetails.class)
+public record VsJobDetails(
       String videoUrl, // URL of the file to translate
       String orgLanguage, // Original language
       String targetLanguage, // Language to translate to

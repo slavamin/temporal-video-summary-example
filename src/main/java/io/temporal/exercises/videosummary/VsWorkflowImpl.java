@@ -6,7 +6,7 @@ import io.temporal.common.RetryOptions;
 import java.time.Duration;
 import java.util.Map;
 
-public class WorkflowImpl implements Workflow {
+public class VsWorkflowImpl implements VsWorkflow {
     private final RetryOptions retryoptions = RetryOptions.newBuilder()
             .setInitialInterval(Duration.ofSeconds(1)) // Wait 1 second before first retry
             .setMaximumInterval(Duration.ofSeconds(30)) // Do not exceed 20 seconds between retries
@@ -33,11 +33,11 @@ public class WorkflowImpl implements Workflow {
             "transcribe", videoProcessingOptions
     );
 
-    private final Activity activityStub = io.temporal.workflow.Workflow.
-            newActivityStub(Activity.class, defaultOptions, perActivityMethodOptions);
+    private final VsActivity activityStub = io.temporal.workflow.Workflow.
+            newActivityStub(VsActivity.class, defaultOptions, perActivityMethodOptions);
 
     @Override
-    public String getVideoSummary(JobDetails jobDetails) {
+    public String getVideoSummary(VsJobDetails jobDetails) {
         final String s3Key;
 
         try {

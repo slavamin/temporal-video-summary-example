@@ -3,13 +3,13 @@ package io.temporal.exercises.videosummary;
 import io.temporal.activity.ActivityInterface;
 
 @ActivityInterface
-public interface Activity {
+public interface VsActivity {
     /**
      * Upload to S3.
      * @param jobDetails Job details containing the video URL and S3 configuration
      * @return The S3 key (path) where the file was uploaded
      */
-    String uploadToS3(JobDetails jobDetails);
+    String uploadToS3(VsJobDetails jobDetails);
 
     /**
      * Delete from S3. (Compensating action)
@@ -23,7 +23,7 @@ public interface Activity {
      * @param s3Key The S3 key (path) where the file was uploaded
      * @return The transcription result
      */
-    String transcribe(JobDetails jobDetails, String s3Key);
+    String transcribe(VsJobDetails jobDetails, String s3Key);
 
     /**
      * Convert the transcription to the target language using the target language from job details.
@@ -31,7 +31,7 @@ public interface Activity {
      * @param originalText The original transcription
      * @return The converted text  
      */
-    String convertOriginalTextToTargetLanguage(JobDetails jobDetails, String originalText);
+    String convertOriginalTextToTargetLanguage(VsJobDetails jobDetails, String originalText);
 
     /**
      * Generate a summary of the video.
@@ -39,5 +39,5 @@ public interface Activity {
      * @param targetText The text in the target language
      * @return The summary
      */
-    String generateSummary(JobDetails jobDetails, String targetText);
+    String generateSummary(VsJobDetails jobDetails, String targetText);
 }

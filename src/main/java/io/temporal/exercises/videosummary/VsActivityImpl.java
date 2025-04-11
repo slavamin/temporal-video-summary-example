@@ -37,12 +37,12 @@ import java.util.UUID;
 import java.util.List;
 import java.util.ArrayList;
 
-public class ActivityImpl implements Activity {
+public class VsActivityImpl implements VsActivity {
     // Store the last used JobDetails for use in compensating actions
-    private static JobDetails lastJobDetails;
+    private static VsJobDetails lastJobDetails;
     
     @Override
-    public String uploadToS3(JobDetails jobDetails) {
+    public String uploadToS3(VsJobDetails jobDetails) {
         // Store jobDetails for potential compensation (deletion) later
         lastJobDetails = jobDetails;
         
@@ -135,7 +135,7 @@ public class ActivityImpl implements Activity {
     }
 
     @Override
-    public String transcribe(JobDetails jobDetails, String s3Key) {
+    public String transcribe(VsJobDetails jobDetails, String s3Key) {
         try {
             // Configure AWS credentials
             AWSCredentials credentials = new BasicAWSCredentials(
@@ -244,7 +244,7 @@ public class ActivityImpl implements Activity {
     }
 
     @Override
-    public String convertOriginalTextToTargetLanguage(JobDetails jobDetails, String text) {
+    public String convertOriginalTextToTargetLanguage(VsJobDetails jobDetails, String text) {
         try {
             // Configure AWS credentials
             AWSCredentials credentials = new BasicAWSCredentials(
@@ -282,7 +282,7 @@ public class ActivityImpl implements Activity {
     }
 
     @Override
-    public String generateSummary(JobDetails jobDetails, String targetText) {
+    public String generateSummary(VsJobDetails jobDetails, String targetText) {
         try {
             // Configure AWS credentials
             AWSCredentials credentials = new BasicAWSCredentials(
