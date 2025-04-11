@@ -36,10 +36,14 @@ The application includes several fault-tolerance features:
 
 The repository includes two HTML diagrams that visualize the application architecture:
 
-- **[workflow-diagram.html](workflow-diagram.html)**: Illustrates the workflow steps and error handling for the video summary process
-- **[component-diagram.html](component-diagram.html)**: Shows the component architecture, relationships between different parts of the system, and interactions with AWS services
+- **workflow-diagram.html**: Illustrates the workflow steps and error handling for the video summary process
+- **component-diagram.html**: Shows the component architecture, relationships between different parts of the system, and interactions with AWS services
 
-Open these HTML files in a browser to view the diagrams.
+**Note:** To properly view these diagrams, you'll need to:
+1. Clone this repository to your local machine
+2. Open the HTML files in a web browser
+
+GitHub will display the raw HTML code rather than rendering the diagrams if you click on the files directly in the repository.
 
 ## Implementation
 
