@@ -7,37 +7,35 @@ public interface VsActivity {
     /**
      * Upload to S3.
      * @param jobDetails Job details containing the video URL and S3 configuration
-     * @return The S3 key (path) where the file was uploaded
+     * @param results Action results
      */
-    String uploadToS3(VsJobDetails jobDetails);
+    void uploadToS3(VsJobDetails jobDetails, VsActionReturnVals results);
 
     /**
      * Delete from S3. (Compensating action)
-     * @param s3Key The S3 key (path) where the video file was uploaded
+     * @param results Action results
      */
-    void deleteFromS3(String s3Key);
+    void deleteFromS3(VsActionReturnVals results);
 
     /**
      * Transcribe the video.
      * @param jobDetails Job details containing the video URL and S3 configuration
-     * @param s3Key The S3 key (path) where the file was uploaded
-     * @return The transcription result
+     * @param results Action results
      */
-    String transcribe(VsJobDetails jobDetails, String s3Key);
+    void transcribe(VsJobDetails jobDetails, VsActionReturnVals results);
 
     /**
      * Convert the transcription to the target language using the target language from job details.
      * @param jobDetails Job details containing the video URL and S3 configuration
-     * @param originalText The original transcription
-     * @return The converted text  
+     * @param results Action results
      */
-    String convertOriginalTextToTargetLanguage(VsJobDetails jobDetails, String originalText);
+    void convertOriginalTextToTargetLanguage(VsJobDetails jobDetails, VsActionReturnVals results);
 
     /**
      * Generate a summary of the video.
      * @param jobDetails Job details containing the video URL and S3 configuration
-     * @param targetText The text in the target language
-     * @return The summary
+     * @param results Action results
+     * @return Summary text
      */
-    String generateSummary(VsJobDetails jobDetails, String targetText);
+    String generateSummary(VsJobDetails jobDetails, VsActionReturnVals results);
 }

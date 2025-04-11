@@ -38,42 +38,35 @@ public class VsWorkflowImpl implements VsWorkflow {
 
     @Override
     public String getVideoSummary(VsJobDetails jobDetails) {
-        final String s3Key;
+        final VsActionReturnVals results = new VsActionReturnVals();
 
         try {
-            s3Key = activityStub.uploadToS3(jobDetails);
+            activityStub.uploadToS3(jobDetails, results);
         }
         catch (Exception e) {
             System.out.println("Failed to upload video file to S3 bucket: " + jobDetails);
             return null; // End transaction without compensating action.
         }
 
-        String originalText = null;
-
         try {
-            originalText = activityStub.transcribe(jobDetails, s3Key);
+            activityStub.transcribe(jobDetails, results);
         }
         catch (Exception e) {
             System.out.println("Failed to transcribe the video: " + jobDetails);
         }
 
-        String targetText = null;
-
-        if(originalText != null) {
+        if(results.getOriginalText() != null) {
             try {
-                targetText = activityStub.convertOriginalTextToTargetLanguage(jobDetails, originalText);
+                activityStub.convertOriginalTextToTargetLanguage(jobDetails, results);
             }
             catch (Exception e) {
                 System.out.println("Failed to translate the original text to target language: " + jobDetails);
             }
         }
 
-        String summary = null;
-
-        if(targetText != null) {
+        if(results.getTargetText() != null) {
             try {
-                 summary = activityStub.generateSummary(jobDetails, targetText);
-                 return summary;
+                 return activityStub.generateSummary(jobDetails, results);
             }
             catch (Exception e) {
                 System.out.println("Failed to generate summary: " + jobDetails);
@@ -82,8 +75,8 @@ public class VsWorkflowImpl implements VsWorkflow {
 
         // Take compensating action
         try {
-            activityStub.deleteFromS3(s3Key);
-            return summary;
+            activityStub.deleteFromS3(results);
+            return null;
         }
         catch (Exception e) {
             System.out.println("Failed to delete uploaded video file from S3 bucket: " + jobDetails);

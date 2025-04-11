@@ -42,7 +42,7 @@ public class VsActivityImpl implements VsActivity {
     private static VsJobDetails lastJobDetails;
     
     @Override
-    public String uploadToS3(VsJobDetails jobDetails) {
+    public void uploadToS3(VsJobDetails jobDetails, VsActionReturnVals results) {
         // Store jobDetails for potential compensation (deletion) later
         lastJobDetails = jobDetails;
         
@@ -95,7 +95,7 @@ public class VsActivityImpl implements VsActivity {
             System.out.println("Successfully uploaded video to S3 bucket " + 
                     jobDetails.bucketName() + " with key " + s3Key);
             
-            return s3Key;
+            results.setS3Key(s3Key);
             
         } catch (IOException e) {
             throw io.temporal.activity.Activity.wrap(new RuntimeException("Failed to upload video to S3: " + e.getMessage(), e));
@@ -103,7 +103,7 @@ public class VsActivityImpl implements VsActivity {
     }
 
     @Override
-    public void deleteFromS3(String s3Key) {
+    public void deleteFromS3(VsActionReturnVals results) {
         try {
             // Use the last used JobDetails for credentials
             if (lastJobDetails == null) {
@@ -124,10 +124,10 @@ public class VsActivityImpl implements VsActivity {
                     .build();
             
             // Delete the object from S3
-            s3Client.deleteObject(lastJobDetails.bucketName(), s3Key);
+            s3Client.deleteObject(lastJobDetails.bucketName(), results.getS3Key());
             
             System.out.println("Successfully deleted object from S3 bucket " + 
-                    lastJobDetails.bucketName() + " with key " + s3Key);
+                    lastJobDetails.bucketName() + " with key " + results.getS3Key());
             
         } catch (Exception e) {
             throw io.temporal.activity.Activity.wrap(new RuntimeException("Failed to delete object from S3: " + e.getMessage(), e));
@@ -135,7 +135,7 @@ public class VsActivityImpl implements VsActivity {
     }
 
     @Override
-    public String transcribe(VsJobDetails jobDetails, String s3Key) {
+    public void transcribe(VsJobDetails jobDetails, VsActionReturnVals results) {
         try {
             // Configure AWS credentials
             AWSCredentials credentials = new BasicAWSCredentials(
@@ -158,7 +158,7 @@ public class VsActivityImpl implements VsActivity {
             
             String mediaUrl = s3Client.generatePresignedUrl(
                     jobDetails.bucketName(),
-                    s3Key,
+                    results.getS3Key(),
                     expiration
             ).toString();
             
@@ -175,9 +175,9 @@ public class VsActivityImpl implements VsActivity {
             
             // Set up media format based on file extension
             String format = "mp4";
-            if (s3Key.toLowerCase().endsWith(".mp3")) {
+            if (results.getS3Key().toLowerCase().endsWith(".mp3")) {
                 format = "mp3";
-            } else if (s3Key.toLowerCase().endsWith(".wav")) {
+            } else if (results.getS3Key().toLowerCase().endsWith(".wav")) {
                 format = "wav";
             }
             
@@ -237,14 +237,14 @@ public class VsActivityImpl implements VsActivity {
 
             // Clean up by deleting the transcription result from S3 if needed
             // s3Client.deleteObject(outputBucket, outputKey);
-            return jsonResult.substring(transcriptStart, transcriptEnd);
+            results.setOriginalText(jsonResult.substring(transcriptStart, transcriptEnd));
         } catch (Exception e) {
             throw io.temporal.activity.Activity.wrap(new RuntimeException("Failed to transcribe video: " + e.getMessage(), e));
         }
     }
 
     @Override
-    public String convertOriginalTextToTargetLanguage(VsJobDetails jobDetails, String text) {
+    public void convertOriginalTextToTargetLanguage(VsJobDetails jobDetails, VsActionReturnVals results) {
         try {
             // Configure AWS credentials
             AWSCredentials credentials = new BasicAWSCredentials(
@@ -263,7 +263,7 @@ public class VsActivityImpl implements VsActivity {
             
             // Create translation request
             TranslateTextRequest translateRequest = new TranslateTextRequest()
-                    .withText(text)
+                    .withText(results.getOriginalText())
                     .withSourceLanguageCode(sourceLanguage)
                     .withTargetLanguageCode(jobDetails.targetLanguage());
             
@@ -274,7 +274,7 @@ public class VsActivityImpl implements VsActivity {
                     " to " + jobDetails.targetLanguage());
             
             // Return the translated text
-            return translateResult.getTranslatedText();
+            results.setTargetText(translateResult.getTranslatedText());
             
         } catch (Exception e) {
             throw io.temporal.activity.Activity.wrap(new RuntimeException("Failed to translate text: " + e.getMessage(), e));
@@ -282,7 +282,7 @@ public class VsActivityImpl implements VsActivity {
     }
 
     @Override
-    public String generateSummary(VsJobDetails jobDetails, String targetText) {
+    public String generateSummary(VsJobDetails jobDetails, VsActionReturnVals results) {
         try {
             // Configure AWS credentials
             AWSCredentials credentials = new BasicAWSCredentials(
@@ -308,7 +308,7 @@ public class VsActivityImpl implements VsActivity {
             
             // Create the key phrases request
             DetectKeyPhrasesRequest keyPhrasesRequest = new DetectKeyPhrasesRequest()
-                    .withText(targetText)
+                    .withText(results.getTargetText())
                     .withLanguageCode(languageCode);
             
             // Detect key phrases
