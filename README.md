@@ -12,6 +12,9 @@ The application consists of two main executables that interact with the Temporal
 
 2. **VsWorkflowWorker** (Worker Executable): Connects to the Temporal server and subscribes to the `VIDEO_SUMMARY_TASK_QUEUE`. It registers workflow and activity implementations and processes tasks dispatched by the server.
 
+- **[Workflow Diagram](workflow-diagram.md)**: Illustrates the workflow steps and error handling for the video summary process
+- **[Component Diagram](component-diagram.md)**: Shows the component architecture, relationships between different parts of the system, and interactions with AWS services
+
 ## Workflow Process
 
 The video summary workflow follows these steps:
@@ -31,17 +34,6 @@ The application includes several fault-tolerance features:
 - **Activity Timeouts**: Different timeouts for standard vs. video processing activities
 - **Compensating Actions**: Cleanup of resources if steps fail after S3 upload
 - **State Persistence**: Temporal maintains workflow state, allowing recovery from worker failures
-
-## Diagrams
-
-The repository includes two HTML diagrams that visualize the application architecture:
-
-- **[workflow-diagram.html](workflow-diagram.html)**: Illustrates the workflow steps and error handling for the video summary process
-- **[component-diagram.html](component-diagram.html)**: Shows the component architecture, relationships between different parts of the system, and interactions with AWS services
-
-**Note:** GitHub will display the raw HTML code rather than rendering the diagrams when you click on these links. To view the rendered diagrams:
-1. Clone this repository to your local machine
-2. Open the HTML files in a web browser
 
 ## Implementation
 
